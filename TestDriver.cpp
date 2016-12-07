@@ -9,10 +9,11 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "32 3goto test 34;33 hello world;";
+  string test = "print abc";
 
   ACode code;
-  code.fromText(test);
+  cout << Statements[code.getStatementType(test)] << endl;
+  //code.fromText(test);
   code.printLines();
 
   return 0;

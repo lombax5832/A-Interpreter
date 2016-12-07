@@ -7,6 +7,7 @@ using namespace std;
 #include<cmath>
 
 ACode::ACode() {
+  vars.push_back(AVar("abc", 0));
 }
 
 ACode::ACode(const string &input) {
@@ -89,14 +90,54 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
   return string::npos;
 }
 
-bool ACode::isValidIdentifier(const string &iden) const {
-  for (int i = 0; i < iden.size(); i++) {
+bool ACode::isValidIdentifier(const string &iden, const size_t start, const size_t end) const {
+  //Reserved words
+  if (iden.find("var ", start) <= end) {
+    return false;
+  }
+  else if (iden.find("goto ", start) <= end) {
+    return false;
+  }
+
+
+  for (size_t i = start; i <= end; i++) {
     if (((iden[i]<'A' || iden[i]>'Z') && (iden[i]<'a' || iden[i]>'z'))) {
-      if (i == 0)
+      if (i == start)
         return false;
       else if (iden[i]<'0' || iden[i]>'9')
         return false;
     }
   }
   return true;
+}
+
+STATEMENT ACode::getStatementType(const string &line) const {
+  if (line.find("var ", 0) == 0) {
+    return VAR;
+  }
+  else if (doesVarExist(line.substr(0, line.find('=', 0) - 1))) {
+    return ASSIGNMENT;
+  }
+  else if ((line.find("goto ", 0) != string::npos) && (line.find("if ", 0) == 0)) {
+    return IF;
+  }
+  else if (line.find("print ", 0) == 0) {
+    return PRINT;
+  }
+  else if (line.find("stop", 0) == 0) {
+    return STOP;
+  }
+  return UNKNOWN;
+}
+
+bool ACode::doesVarExist(const string & var) const {
+  vector<AVar>::const_iterator it = vars.begin();
+  //chop off trailing blank spaces
+  string internalVar = var.substr(0, var.find(' ', 0) - 1);
+  for (; it != vars.end(); it++) {
+    if (it->iden == internalVar) {
+      return true;
+    }
+  }
+  return false;
 }
