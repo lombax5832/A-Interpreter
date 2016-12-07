@@ -25,9 +25,9 @@ private:
 
   void addline(ALine);
   
-  
-  ALine textToLine(const string&) const;
   ALine textToLine(const string&, const size_t begin, const size_t end) const;
 
   size_t nextNonWhitespaceOrNumber(const string&, const size_t begin) const;
+
+  bool isValidIdentifier(const string &iden) const;
 };

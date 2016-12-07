@@ -88,3 +88,15 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
   }
   return string::npos;
 }
+
+bool ACode::isValidIdentifier(const string &iden) const {
+  for (int i = 0; i < iden.size(); i++) {
+    if (((iden[i]<'A' || iden[i]>'Z') && (iden[i]<'a' || iden[i]>'z'))) {
+      if (i == 0)
+        return false;
+      else if (iden[i]<'0' || iden[i]>'9')
+        return false;
+    }
+  }
+  return true;
+}
