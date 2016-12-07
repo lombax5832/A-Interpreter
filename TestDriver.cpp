@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "32 goto test 34;33 hello world;";
+  string test = "32 3goto test 34;33 hello world;";
 
   ACode code;
   code.fromText(test);

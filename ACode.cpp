@@ -10,7 +10,6 @@ ACode::ACode() {
 }
 
 ACode::ACode(const string &input) {
-
 }
 
 void ACode::addline(ALine line) {
@@ -71,11 +70,21 @@ ALine ACode::textToLine(const string& input, const size_t begin, const size_t en
   return ALine(label, line);
 }
 
+//Returns the pos of the next non-whitespace char after the label
 size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin) const {
+  bool foundNum = false;
+  bool foundWsAfterNum = false;
+
   for (size_t i = begin; i < input.length(); i++) {
-    if (input[i] != ' ' && (input[i] < '0' || input[i] > '9')) {
+
+    if (input[i] == ' ' && (input[i] < '0' || input[i] > '9')) {
+      foundWsAfterNum = true;
+    } else if (input[i] >= '0' && input[i] <= '9') {
+      foundNum = true;
+    } 
+
+    if(foundWsAfterNum && input[i] != ' ')
       return i;
-    }
   }
   return string::npos;
 }
