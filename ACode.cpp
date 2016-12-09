@@ -120,6 +120,8 @@ string ACode::infixToPostfix(const string &infix) const {
   string postfix = "";
   stack<char> stack;
   stack.push('#');
+  bool minusIsNegative = false; //Want to know if the next '-' we see is actually
+                                //  a negative number
   char popOp;
   for (size_t i = 0; i < infix.size(); i++) {
     if (infix[i] != '#') {
@@ -132,35 +134,48 @@ string ACode::infixToPostfix(const string &infix) const {
             
           } else {
             postfix += ' ';
+            minusIsNegative = false;
             break;
           }
         }
       }
       if (infix[i] == '(') {
+        minusIsNegative = true; //Right after an opening parenthesis,
+                                //  there can be a negative number
         stack.push(infix[i]);
       }
       if (infix[i] == ')') {
+        minusIsNegative = false;
         popOp = stack.top();
         stack.pop();
         while (popOp != '(') {
           postfix += popOp;
+          postfix += ' ';
           popOp = stack.top();
           stack.pop();
         }
       }
       if (isOperator(infix[i])) {
-        while (getOperatorPrecedance(stack.top()) >= getOperatorPrecedance(infix[i])) {
-          popOp = stack.top();
-          stack.pop();
-          postfix += popOp;
+        if (infix[i] == '-' && minusIsNegative) {
+          postfix += '-';
+          minusIsNegative = false;
+        } else {
+          minusIsNegative = true;
+          while (getOperatorPrecedance(stack.top()) >= getOperatorPrecedance(infix[i])) {
+            popOp = stack.top();
+            stack.pop();
+            postfix += popOp;
+            postfix += ' ';
+          }
+          stack.push(infix[i]);
         }
-        stack.push(infix[i]);
       }
     }
   }
   while (stack.top() != '#') {
     popOp = stack.top();
     stack.pop();
+    postfix += popOp;
   }
   return postfix;
 }
@@ -203,9 +218,11 @@ int ACode::getOperatorPrecedance(const char input) const {
     return 1;
   if (input == '^')
     return 2;
+  //if (input == '#')
+  //  return 3;
   return -1;
 }
 
 bool ACode::isOperator(const char input) const {
-  return getOperatorPrecedance(input) > -1;
+  return getOperatorPrecedance(input) != -1;
 }

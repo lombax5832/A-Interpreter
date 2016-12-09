@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "(2234 +345) *322";
+  string test = "(2234 +-345) *322 /-3 + (30-23)#";
 
   ACode code;
   cout << code.infixToPostfix(test) << endl;
