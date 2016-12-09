@@ -5,7 +5,8 @@ using namespace std;
 
 //Constant Statement types
 const enum STATEMENT {VAR, ASSIGNMENT, IF, PRINT, STOP, UNKNOWN};
-const string Statements[] = { "VAR" , "ASSIGNMENT", "IF", "PRINT", "STOP", "UNKNOWN" };
+//const string STATEMENT[] = { "VAR" , "ASSIGNMENT", "IF", "PRINT", "STOP", "UNKNOWN" };
+const enum  SYNTAX_ERR {NONE, UNDEC_VAR};
 
 struct ALine {
   size_t label;
@@ -36,6 +37,7 @@ public:
   
   STATEMENT getStatementType(const string &line) const;
 
+  int convertIdenToVal(const string &var) const;
 private:
   vector<ALine> lines;
 
@@ -58,4 +60,6 @@ private:
   int getOperatorPrecedance(const char input) const;
 
   bool isOperator(const char input) const;
+
+  
 };

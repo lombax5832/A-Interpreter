@@ -8,7 +8,7 @@ using namespace std;
 #include<stack>
 
 ACode::ACode() {
-  vars.push_back(AVar("abc", 0));
+  vars.push_back(AVar("abc", 20));
 }
 
 ACode::ACode(const string &input) {
@@ -225,4 +225,13 @@ int ACode::getOperatorPrecedance(const char input) const {
 
 bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
+}
+
+int ACode::convertIdenToVal(const string &var) const {
+  vector<AVar>::const_iterator it = vars.begin();
+  for (; it != vars.end(); it++) {
+    if (it->iden == var) {
+      return it->val;
+    }
+  }
 }
