@@ -36,7 +36,6 @@ public:
   
   STATEMENT getStatementType(const string &line) const;
 
-  string infixToPostfix(const string &infix) const;
 private:
   vector<ALine> lines;
 
@@ -52,7 +51,7 @@ private:
 
   int handleExpression(const string &expr) const;
 
-
+  string infixToPostfix(const string &infix) const;
 
   bool doesVarExist(const string& var) const;
 
