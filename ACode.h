@@ -6,11 +6,6 @@ using namespace std;
 //Constant Statement types
 const enum STATEMENT {VAR, ASSIGNMENT, IF, PRINT, STOP, UNKNOWN};
 const string Statements[] = { "VAR" , "ASSIGNMENT", "IF", "PRINT", "STOP", "UNKNOWN" };
-const int STATEMENT_VAR = 0;
-const int STATEMENT_ASSIGNMENT = 1;
-const int STATEMENT_IF = 2;
-const int STATEMENT_PRINT = 3;
-const int STATEMENT_STOP = 4;
 
 struct ALine {
   size_t label;
@@ -40,6 +35,8 @@ public:
   void printLines() const;
   
   STATEMENT getStatementType(const string &line) const;
+
+  string infixToPostfix(const string &infix) const;
 private:
   vector<ALine> lines;
 
@@ -53,7 +50,13 @@ private:
 
   bool isValidIdentifier(const string &iden, const size_t, const size_t end) const;
 
-  
+  int handleExpression(const string &expr) const;
+
+
 
   bool doesVarExist(const string& var) const;
+
+  int getOperatorPrecedance(const char input) const;
+
+  bool isOperator(const char input) const;
 };

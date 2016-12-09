@@ -9,10 +9,10 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "print abc";
+  string test = "(2234 +345) *322";
 
   ACode code;
-  cout << Statements[code.getStatementType(test)] << endl;
+  cout << code.infixToPostfix(test) << endl;
   //code.fromText(test);
   code.printLines();
 

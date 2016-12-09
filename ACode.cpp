@@ -5,6 +5,7 @@ using namespace std;
 #include<iostream>
 #include<sstream>
 #include<cmath>
+#include<stack>
 
 ACode::ACode() {
   vars.push_back(AVar("abc", 0));
@@ -111,6 +112,59 @@ bool ACode::isValidIdentifier(const string &iden, const size_t start, const size
   return true;
 }
 
+int ACode::handleExpression(const string &expr) const {
+  return 0;
+}
+
+string ACode::infixToPostfix(const string &infix) const {
+  string postfix = "";
+  stack<char> stack;
+  stack.push('#');
+  char popOp;
+  for (size_t i = 0; i < infix.size(); i++) {
+    if (infix[i] != '#') {
+      if ((infix[i] >= '0' && infix[i] <= '9')) {
+        postfix += infix[i++];
+        for (size_t j = i; j < infix.size(); j++) {
+          i = j;
+          if (infix[j] >= '0' && infix[j] <= '9') {
+            postfix += infix[i];
+            
+          } else {
+            postfix += ' ';
+            break;
+          }
+        }
+      }
+      if (infix[i] == '(') {
+        stack.push(infix[i]);
+      }
+      if (infix[i] == ')') {
+        popOp = stack.top();
+        stack.pop();
+        while (popOp != '(') {
+          postfix += popOp;
+          popOp = stack.top();
+          stack.pop();
+        }
+      }
+      if (isOperator(infix[i])) {
+        while (getOperatorPrecedance(stack.top()) >= getOperatorPrecedance(infix[i])) {
+          popOp = stack.top();
+          stack.pop();
+          postfix += popOp;
+        }
+        stack.push(infix[i]);
+      }
+    }
+  }
+  while (stack.top() != '#') {
+    popOp = stack.top();
+    stack.pop();
+  }
+  return postfix;
+}
+
 STATEMENT ACode::getStatementType(const string &line) const {
   if (line.find("var ", 0) == 0) {
     return VAR;
@@ -140,4 +194,18 @@ bool ACode::doesVarExist(const string & var) const {
     }
   }
   return false;
+}
+
+int ACode::getOperatorPrecedance(const char input) const {
+  if (input == '+' || input == '-')
+    return 0;
+  if (input == '*' || input == '/')
+    return 1;
+  if (input == '^')
+    return 2;
+  return -1;
+}
+
+bool ACode::isOperator(const char input) const {
+  return getOperatorPrecedance(input) > -1;
 }
