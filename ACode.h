@@ -38,6 +38,10 @@ public:
   STATEMENT getStatementType(const string &line) const;
 
   int convertIdenToVal(const string &var) const;
+
+  string infixToPostfix(const string &infix) const;
+
+  string resolveIdensInExpression(const string &expr) const;
 private:
   vector<ALine> lines;
 
@@ -53,7 +57,7 @@ private:
 
   int handleExpression(const string &expr) const;
 
-  string infixToPostfix(const string &infix) const;
+  
 
   bool doesVarExist(const string& var) const;
 
@@ -61,5 +65,4 @@ private:
 
   bool isOperator(const char input) const;
 
-  
 };

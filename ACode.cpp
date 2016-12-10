@@ -118,7 +118,7 @@ int ACode::handleExpression(const string &expr) const {
 
 string ACode::infixToPostfix(const string &infix) const {
   string postfix = "";
-  stack<char> stack;
+  std::stack<char> stack;
   stack.push('#');
   bool minusIsNegative = false; //Want to know if the next '-' we see is actually
                                 //  a negative number
@@ -227,6 +227,40 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
+string ACode::resolveIdensInExpression(const string &expr) const {
+  string toReturn = "";
+  string temp = "";
+  stringstream strm;
+  bool found = false;
+  for (size_t i = 0,j = 0; i < expr.size(); i++) {
+    cout <<'t'<< i << endl;
+    if ((expr[i] >= 'A'&&expr[i] <= 'Z') || (expr[i] >= 'a'&&expr[i] <= 'z')) {
+      for (j = i; j < expr.size(); j++) {
+        if (found) {
+          
+          //cout << "help" << endl;
+          strm << convertIdenToVal(expr.substr(i, j - i - 1));
+          cout << expr.substr(i, j - i - 1) << endl;
+          strm >> temp;
+          //cout << temp << endl;
+          toReturn += temp;
+          i = j - 1;
+          toReturn += expr[j - 1];
+          found = false;
+          break;
+        }else if (!((expr[j] >= 'A' && expr[j] <= 'Z') || (expr[j] >= 'a' && expr[j] <= 'z') || (expr[j] >= '0' && expr[j] <= '9'))) {
+          cout << j  << ":\'" << expr[j] << '\'' << endl;
+          found = true;
+        }
+        
+      }
+    } else {
+      toReturn += expr[i];
+    }
+  }
+  return toReturn;
+}
+
 int ACode::convertIdenToVal(const string &var) const {
   vector<AVar>::const_iterator it = vars.begin();
   for (; it != vars.end(); it++) {
@@ -234,4 +268,7 @@ int ACode::convertIdenToVal(const string &var) const {
       return it->val;
     }
   }
+  //cout << "held" << endl;
+  //exit(2);
+  return 0;
 }

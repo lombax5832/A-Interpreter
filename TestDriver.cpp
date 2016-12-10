@@ -9,10 +9,11 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "(2234 +-345) *322 /-3 + (30-23)#";
+  string test = "(abc abc";
 
   ACode code;
-  cout << code.convertIdenToVal("abc") << endl;
+  //cout << code.infixToPostfix(test) << endl;
+  cout << code.resolveIdensInExpression(test) << endl;
   //code.fromText(test);
   code.printLines();
 
