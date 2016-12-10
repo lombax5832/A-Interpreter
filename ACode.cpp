@@ -273,6 +273,14 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
+void ACode::handleLine(const ALine line) {
+  switch (getStatementType(line.line)) {
+  case VAR:
+  case ASSIGNMENT:
+  case IF:
+  }
+}
+
 //EXPRESSION
 //<char> <expression> | <var> <expression>
 string ACode::resolveIdensInExpression(const string &expr, size_t start, const size_t end) const {

@@ -76,4 +76,5 @@ private:
 
   bool isOperator(const char input) const;
 
+  void handleLine(const ALine line);
 };
