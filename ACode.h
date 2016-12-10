@@ -45,6 +45,8 @@ public:
   string infixToPostfix(const string &infix) const;
 
   string resolveIdensInExpression(const string &expr, size_t start, const size_t end) const;
+
+  int evalPostFix(const string &expr, const size_t label) const;
 private:
   vector<ALine> lines;
 
@@ -60,9 +62,11 @@ private:
 
   size_t nextNonWhitespaceOrNumber(const string&, const size_t begin) const;
 
-  bool isValidIdentifier(const string &iden, const size_t, const size_t end) const;
+  bool isValidIdentifier(const string &iden, const size_t start, const size_t end) const;
 
-  int handleExpression(const string &expr) const;
+  
+
+  int doOp(const char op, const int first, const int second) const;
 
   bool isLetter(const char) const;
 

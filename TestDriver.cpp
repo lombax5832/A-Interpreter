@@ -9,11 +9,12 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "(-abc +abc) + 3-1";
+  string test = "10/2/5";
 
   ACode code;
   //cout << code.infixToPostfix(test) << endl;
   cout << code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())) << endl;
+  cout << code.evalPostFix(code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())), 1) << endl;
   //cout << code.resolveIdensInExpression(test, 0, test.size()) << endl;
   //code.fromText(test);
   code.printLines();

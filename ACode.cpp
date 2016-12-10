@@ -144,7 +144,79 @@ bool ACode::isValidIdentifier(const string &iden, const size_t start, const size
 }
 
 //TODO
-int ACode::handleExpression(const string &expr) const {
+int ACode::evalPostFix(const string &expr, const size_t label) const {
+  std::stack<int> stk;
+  stringstream strm;
+  string toAdd = "";
+  int converted = 0;
+
+  //Stores currently operated on operands
+  int firstInt = 0;
+  int secondInt = 0;
+
+  for (size_t i = 0; i < expr.size(); i++) {
+
+    if (isNumber(expr[i]) || expr[i] == '!') {
+      if (expr[i] == '!' && toAdd == "") {
+        toAdd += '-';
+      } else if (isNumber(expr[i])) {
+        toAdd += expr[i];
+      }
+    } else if (toAdd != "") {
+      strm << toAdd + " ";
+      toAdd = "";
+      converted=0;
+      strm >> converted;
+      stk.push(converted);
+    }
+
+    if (isOperator(expr[i])) {
+      if (stk.size() >= 2) {
+        secondInt = stk.top();
+        stk.pop();
+        firstInt = stk.top();
+        stk.pop();
+        if (expr[i] == '/' && secondInt == 0) {
+          cout << "LINE " << label << ": ";
+          cout << "Cannot divide by 0!" << endl;
+          exit(2);
+        } else {
+          stk.push(doOp(expr[i], firstInt, secondInt));
+        }
+      } else {
+        cout << "LINE " << label << ": ";
+        cout << "Expression must have at least 2 terms before an operator!" << endl;
+        exit(2);
+      }
+    }
+  }
+  if (stk.size() != 1) {
+    cout << "LINE " << label << ": ";
+    cout << "More than 1 item in stack after expression is handled!" << endl;
+    exit(2);
+  }
+  return stk.top();
+}
+
+int ACode::doOp(const char op, const int first, const int second) const {
+  switch (op) {
+  case '+':
+    return first + second;
+    break;
+  case '-':
+    return first - second;
+    break;
+  case '*':
+    return first * second;
+    break;
+  case '/':
+    return first / second;
+    break;
+  default:
+    cout << "Operator not valid" << endl;
+    exit(2);
+    break;
+  }
   return 0;
 }
 
@@ -163,9 +235,9 @@ bool ACode::isAlphanumeric(const char input) const {
 //Converts infix(3+3) into postfix(3 3+)
 string ACode::infixToPostfix(const string &infix) const {
   string postfix = "";
-  std::stack<char> stack;
-  stack.push('#');
-  bool minusIsNegative = false; //Want to know if the next '-' we see is actually
+  std::stack<char> opStack;
+  opStack.push('#');
+  bool minusIsNegative = true; //Want to know if the next '-' we see is actually
                                 //  a negative number
   char popOp;
   for (size_t i = 0; i < infix.size(); i++) {
@@ -187,39 +259,39 @@ string ACode::infixToPostfix(const string &infix) const {
       if (infix[i] == '(') {
         minusIsNegative = true; //Right after an opening parenthesis,
                                 //  there can be a negative number
-        stack.push(infix[i]);
+        opStack.push(infix[i]);
       }
       if (infix[i] == ')') {
         minusIsNegative = false;
-        popOp = stack.top();
-        stack.pop();
+        popOp = opStack.top();
+        opStack.pop();
         while (popOp != '(') {
           postfix += popOp;
           postfix += ' ';
-          popOp = stack.top();
-          stack.pop();
+          popOp = opStack.top();
+          opStack.pop();
         }
       }
       if (isOperator(infix[i])) {
         if (infix[i] == '-' && minusIsNegative) {
-          postfix += '-';
+          postfix += '!';
           minusIsNegative = false;
         } else {
           minusIsNegative = true;
-          while (getOperatorPrecedance(stack.top()) >= getOperatorPrecedance(infix[i])) {
-            popOp = stack.top();
-            stack.pop();
+          while (getOperatorPrecedance(opStack.top()) >= getOperatorPrecedance(infix[i])) {
+            popOp = opStack.top();
+            opStack.pop();
             postfix += popOp;
             postfix += ' ';
           }
-          stack.push(infix[i]);
+          opStack.push(infix[i]);
         }
       }
     }
   }
-  while (stack.top() != '#') {
-    popOp = stack.top();
-    stack.pop();
+  while (opStack.top() != '#') {
+    popOp = opStack.top();
+    opStack.pop();
     postfix += ' ';
     postfix += popOp;
   }
@@ -276,8 +348,17 @@ bool ACode::isOperator(const char input) const {
 void ACode::handleLine(const ALine line) {
   switch (getStatementType(line.line)) {
   case VAR:
+    break;
   case ASSIGNMENT:
+    break;
   case IF:
+    break;
+  case STOP:
+    break;
+  case PRINT:
+    break;
+  case UNKNOWN:
+    break;
   }
 }
 
@@ -296,7 +377,6 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
         strm << convertIdenToVal(expr.substr(start, i - start));
         strm >> temp;
         toReturn = temp;
-        cout << toReturn << ';' << endl;
         start = i-1;
         break;
       }
