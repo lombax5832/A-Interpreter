@@ -24,6 +24,9 @@ struct AVar {
     iden = id;
     val = in;
   }
+  AVar* AVar::getThis() {
+    return this;
+  }
 };
 
 class ACode{
@@ -47,7 +50,11 @@ private:
 
   vector<AVar> vars;
 
-  void addline(ALine);
+  void addline(const ALine);
+
+  void addVar(const AVar);
+
+  void modifyVar(const AVar);
   
   ALine textToLine(const string&, const size_t begin, const size_t end) const;
 
@@ -57,7 +64,11 @@ private:
 
   int handleExpression(const string &expr) const;
 
-  
+  bool isLetter(const char) const;
+
+  bool isNumber(const char) const;
+
+  bool isAlphanumeric(const char) const;
 
   bool doesVarExist(const string& var) const;
 

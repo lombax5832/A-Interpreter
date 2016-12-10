@@ -16,7 +16,7 @@ ACode::ACode(const string &input) {
 }
 
 //Adds a line to lines vector if label is greater than previous label
-void ACode::addline(ALine line) {
+void ACode::addline(const ALine line) {
   //Preserves order to use binary search later
   if (lines.empty()) {
     lines.push_back(line);
@@ -29,6 +29,27 @@ void ACode::addline(ALine line) {
     cout << "ERROR, added label must be larger than previous labels." << endl;
     exit(2);
   }
+}
+
+void ACode::addVar(const AVar toAdd) {
+  if (!doesVarExist(toAdd.iden)) {
+    vars.push_back(toAdd);
+  } else {
+    cout << "Var " << toAdd.iden << " already exists." << endl;
+    exit(2);
+  }
+}
+
+void ACode::modifyVar(const AVar toModify) {
+  vector<AVar>::iterator it = vars.begin();
+  for (; it != vars.end(); it++) {
+    if (it->iden == toModify.iden) {
+      it->val = toModify.val;
+      break;
+    }
+  }
+  cout << "Var " << toModify.iden << " does not exist." << endl;
+  exit(2);
 }
 
 //Using a large string, stores lines in lines vector
@@ -84,9 +105,9 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
 
   for (size_t i = begin; i < input.length(); i++) {
 
-    if (input[i] == ' ' && (input[i] < '0' || input[i] > '9')) {
+    if (input[i] == ' ') {
       foundWsAfterNum = true;
-    } else if (input[i] >= '0' && input[i] <= '9') {
+    } else if (isNumber(input[i])) {
       foundNum = true;
     } 
 
@@ -101,11 +122,15 @@ bool ACode::isValidIdentifier(const string &iden, const size_t start, const size
   //Reserved words
   if (iden.find("var ", start) <= end) {
     return false;
-  }
-  else if (iden.find("goto ", start) <= end) {
+  } else if (iden.find("goto ", start) <= end) {
+    return false;
+  } else if (iden.find("print ", start) <= end) {
+    return false;
+  } else if (iden.find("stop ", start) <= end) {
+    return false;
+  } else if (iden.find("if ", start) <= end) {
     return false;
   }
-
 
   for (size_t i = start; i <= end; i++) {
     if (((iden[i]<'A' || iden[i]>'Z') && (iden[i]<'a' || iden[i]>'z'))) {
@@ -123,6 +148,18 @@ int ACode::handleExpression(const string &expr) const {
   return 0;
 }
 
+bool ACode::isLetter(const char input) const {
+  return ((input >= 'a' && input <= 'z') || (input >= 'A' && input <= 'Z'));
+}
+
+bool ACode::isNumber(const char input) const {
+  return (input >= '0' && input <= '9');
+}
+
+bool ACode::isAlphanumeric(const char input) const {
+  return (isLetter(input) || isNumber(input));
+}
+
 //Converts infix(3+3) into postfix(3 3+)
 string ACode::infixToPostfix(const string &infix) const {
   string postfix = "";
@@ -133,11 +170,11 @@ string ACode::infixToPostfix(const string &infix) const {
   char popOp;
   for (size_t i = 0; i < infix.size(); i++) {
     if (infix[i] != '#') {
-      if ((infix[i] >= '0' && infix[i] <= '9')) {
+      if (isNumber(infix[i])) {
         postfix += infix[i++];
         for (size_t j = i; j < infix.size(); j++) {
           i = j;
-          if (infix[j] >= '0' && infix[j] <= '9') {
+          if (isNumber(infix[j])) {
             postfix += infix[i];
             
           } else {
@@ -183,6 +220,7 @@ string ACode::infixToPostfix(const string &infix) const {
   while (stack.top() != '#') {
     popOp = stack.top();
     stack.pop();
+    postfix += ' ';
     postfix += popOp;
   }
   return postfix;
@@ -242,9 +280,9 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
   if (start == end) {
     return "";
   }
-  else if (((expr[start] >= 'a'&&expr[start] <= 'z') || (expr[start] >= 'A'&&expr[start] <= 'Z'))) {
+  else if (isLetter(expr[start])) {
     for (size_t i = start; i <= end; i++) {
-      if ((i == end) || !((expr[i] >= 'a'&&expr[i] <= 'z') || (expr[i] >= 'A'&&expr[i] <= 'Z') || (expr[i] >= '0'&&expr[i] <= '9'))) {
+      if ((i == end) || !isAlphanumeric(expr[i])) {
         string temp = "";
         stringstream strm;
         strm << convertIdenToVal(expr.substr(start, i - start));
