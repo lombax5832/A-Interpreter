@@ -8,12 +8,14 @@ using namespace std;
 #include<stack>
 
 ACode::ACode() {
+  //test var
   vars.push_back(AVar("abc", 20));
 }
 
 ACode::ACode(const string &input) {
 }
 
+//Adds a line to lines vector if label is greater than previous label
 void ACode::addline(ALine line) {
   //Preserves order to use binary search later
   if (lines.empty()) {
@@ -29,6 +31,7 @@ void ACode::addline(ALine line) {
   }
 }
 
+//Using a large string, stores lines in lines vector
 void ACode::fromText(const string &input) {
   size_t pos = 0;
   size_t lastPos = 0;
@@ -45,6 +48,7 @@ void ACode::fromText(const string &input) {
   }
 }
 
+//Prints all stored lines
 void ACode::printLines() const {
   if (!lines.empty()) {
     for (size_t i = 0; i < lines.size(); i++) {
@@ -53,6 +57,7 @@ void ACode::printLines() const {
   }
 }
 
+//Converts range of a string into a line and stores in lines vector
 ALine ACode::textToLine(const string& input, const size_t begin, const size_t end) const {
   size_t label = 0;
   string line = "";
@@ -91,6 +96,7 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
   return string::npos;
 }
 
+//Returns true if the inputted range of a string "stuff(thisIsAVar)stuff" is valid
 bool ACode::isValidIdentifier(const string &iden, const size_t start, const size_t end) const {
   //Reserved words
   if (iden.find("var ", start) <= end) {
@@ -112,10 +118,12 @@ bool ACode::isValidIdentifier(const string &iden, const size_t start, const size
   return true;
 }
 
+//TODO
 int ACode::handleExpression(const string &expr) const {
   return 0;
 }
 
+//Converts infix(3+3) into postfix(3 3+)
 string ACode::infixToPostfix(const string &infix) const {
   string postfix = "";
   std::stack<char> stack;
@@ -199,6 +207,7 @@ STATEMENT ACode::getStatementType(const string &line) const {
   return UNKNOWN;
 }
 
+//Returns whether or not the variable exists in the vars vector
 bool ACode::doesVarExist(const string & var) const {
   vector<AVar>::const_iterator it = vars.begin();
   //chop off trailing blank spaces
@@ -253,6 +262,7 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
   return toReturn + resolveIdensInExpression(expr, start, end);
 }
 
+//Finds the corresponding variable in the vars vector and returns the value
 int ACode::convertIdenToVal(const string &var) const {
   vector<AVar>::const_iterator it = vars.begin();
   for (; it != vars.end(); it++) {
