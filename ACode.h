@@ -11,7 +11,7 @@ const enum  SYNTAX_ERR {NONE, UNDEC_VAR};
 struct ALine {
   size_t label;
   string line;
-  ALine(size_t lbl, string &ln) {
+  ALine(size_t lbl, string ln) {
     label = lbl;
     line = ln;
   }
@@ -47,6 +47,8 @@ public:
   string resolveIdensInExpression(const string &expr, size_t start, const size_t end) const;
 
   int evalPostFix(const string &expr, const size_t label) const;
+
+  bool isVarStatementValid(const ALine &line) const;
 private:
   vector<ALine> lines;
 
@@ -78,5 +80,9 @@ private:
 
   bool isOperator(const char input) const;
 
-  void handleLine(const ALine line);
+  void handleLine(const ALine &line);
+
+  void validateLine(const ALine &line) const;
+
+  
 };

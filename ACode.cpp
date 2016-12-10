@@ -10,6 +10,7 @@ using namespace std;
 ACode::ACode() {
   //test var
   vars.push_back(AVar("abc", 20));
+  addline(ALine(32, "var asdf"));
 }
 
 ACode::ACode(const string &input) {
@@ -59,8 +60,6 @@ void ACode::modifyVar(const AVar toModify, const size_t label) {
 void ACode::fromText(const string &input) {
   size_t pos = 0;
   size_t lastPos = 0;
-  size_t label = 0;
-  string line = "";
 
   pos = input.find(";", 0);
 
@@ -88,7 +87,7 @@ ALine ACode::textToLine(const string& input, const size_t begin, const size_t en
   size_t nextWSorNum = 0;
 
   stringstream ss;
-  ss << input.substr(begin, end - begin);
+  ss << input.substr(begin, end - begin) + ' ';
 
   ss >> label;
 
@@ -348,9 +347,79 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
-void ACode::handleLine(const ALine line) {
+void ACode::handleLine(const ALine &line) {
   switch (getStatementType(line.line)) {
   case VAR:
+    break;
+  case ASSIGNMENT:
+    break;
+  case IF:
+    break;
+  case STOP:
+    break;
+  case PRINT:
+    break;
+  case UNKNOWN:
+    break;
+  }
+}
+
+bool ACode::isVarStatementValid(const ALine & line) const {
+  size_t pos = line.line.find("var ", 0);
+  string tempVarIden = "";
+  bool foundNum = false;
+  size_t i = pos+4; //4 = size of "var "
+
+  if (pos != string::npos) {
+    while (line.line[i] == ' ' && i < line.line.length()) {
+      i++;
+    }
+    if (isLetter(line.line[i])) {
+      tempVarIden += line.line[i];
+      i++;
+      while (isAlphanumeric(line.line[i]) && i < line.line.length()) {
+        tempVarIden += line.line[i];
+        i++;
+      }
+      pos = line.line.find('=', i);
+      //cout << pos << endl;
+      if (pos == string::npos) {
+        while (i < line.line.length()) {
+          if (line.line[i] != ' ')
+            return false;
+          i++;
+        }
+        return true;
+      } else {
+        i = pos + 1;
+        while (i < line.line.length()) {
+          if (isLetter(line.line[i])) {
+
+            return false;
+          }
+          if ((!isNumber(line.line[i]) || line.line[i] == ' ') && foundNum) {
+            return false;
+          } else if (isNumber(line.line[i])) {
+            foundNum = true;;
+          }
+          i++;
+        }
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+}
+
+void ACode::validateLine(const ALine &line) const {
+  switch (getStatementType(line.line)) {
+  case VAR:
+    if (!isVarStatementValid(line)) {
+      cout << "LINE " << line.label << ": ";
+      cout << "Invalid VAR Statement" << endl;
+      exit(2);
+    }
     break;
   case ASSIGNMENT:
     break;
