@@ -211,6 +211,7 @@ bool ACode::doesVarExist(const string & var) const {
   return false;
 }
 
+//Higher return == higher precendance
 int ACode::getOperatorPrecedance(const char input) const {
   if (input == '+' || input == '-')
     return 0;
@@ -218,8 +219,6 @@ int ACode::getOperatorPrecedance(const char input) const {
     return 1;
   if (input == '^')
     return 2;
-  //if (input == '#')
-  //  return 3;
   return -1;
 }
 
@@ -227,6 +226,8 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
+//EXPRESSION
+//<char> <expression> | <var> <expression>
 string ACode::resolveIdensInExpression(const string &expr, size_t start, const size_t end) const {
   string toReturn = "";
   if (start == end) {
@@ -249,8 +250,6 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
     toReturn = expr[start];
   }
   start++;
-  //cout << start << " " << toReturn << endl;
-  cout << expr << ' ' << start << ' ' << end << endl;
   return toReturn + resolveIdensInExpression(expr, start, end);
 }
 
@@ -261,7 +260,5 @@ int ACode::convertIdenToVal(const string &var) const {
       return it->val;
     }
   }
-  //cout << "held" << endl;
-  //exit(2);
   return 0;
 }
