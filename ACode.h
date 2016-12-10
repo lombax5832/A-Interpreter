@@ -41,7 +41,7 @@ public:
 
   string infixToPostfix(const string &infix) const;
 
-  string resolveIdensInExpression(const string &expr) const;
+  string resolveIdensInExpression(const string &expr, size_t start, const size_t end) const;
 private:
   vector<ALine> lines;
 
