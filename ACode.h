@@ -54,9 +54,9 @@ private:
 
   void addline(const ALine);
 
-  void addVar(const AVar);
+  void addVar(const AVar, const size_t label);
 
-  void modifyVar(const AVar);
+  void modifyVar(const AVar, const size_t label);
   
   ALine textToLine(const string&, const size_t begin, const size_t end) const;
 
@@ -64,9 +64,7 @@ private:
 
   bool isValidIdentifier(const string &iden, const size_t start, const size_t end) const;
 
-  
-
-  int doOp(const char op, const int first, const int second) const;
+  int doOp(const char op, const int first, const int second, const size_t label) const;
 
   bool isLetter(const char) const;
 

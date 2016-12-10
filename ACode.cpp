@@ -26,21 +26,23 @@ void ACode::addline(const ALine line) {
   if (line.label > lines.back().label) {
     lines.push_back(line);
   } else {
+    cout << "LINE " << line.label << ": ";
     cout << "ERROR, added label must be larger than previous labels." << endl;
     exit(2);
   }
 }
 
-void ACode::addVar(const AVar toAdd) {
+void ACode::addVar(const AVar toAdd, const size_t label) {
   if (!doesVarExist(toAdd.iden)) {
     vars.push_back(toAdd);
   } else {
+    cout << "LINE " << label << ": ";
     cout << "Var " << toAdd.iden << " already exists." << endl;
     exit(2);
   }
 }
 
-void ACode::modifyVar(const AVar toModify) {
+void ACode::modifyVar(const AVar toModify, const size_t label) {
   vector<AVar>::iterator it = vars.begin();
   for (; it != vars.end(); it++) {
     if (it->iden == toModify.iden) {
@@ -48,6 +50,7 @@ void ACode::modifyVar(const AVar toModify) {
       break;
     }
   }
+  cout << "LINE " << label << ": ";
   cout << "Var " << toModify.iden << " does not exist." << endl;
   exit(2);
 }
@@ -143,7 +146,6 @@ bool ACode::isValidIdentifier(const string &iden, const size_t start, const size
   return true;
 }
 
-//TODO
 int ACode::evalPostFix(const string &expr, const size_t label) const {
   std::stack<int> stk;
   stringstream strm;
@@ -181,7 +183,7 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
           cout << "Cannot divide by 0!" << endl;
           exit(2);
         } else {
-          stk.push(doOp(expr[i], firstInt, secondInt));
+          stk.push(doOp(expr[i], firstInt, secondInt, label));
         }
       } else {
         cout << "LINE " << label << ": ";
@@ -198,7 +200,7 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
   return stk.top();
 }
 
-int ACode::doOp(const char op, const int first, const int second) const {
+int ACode::doOp(const char op, const int first, const int second, const size_t label) const {
   switch (op) {
   case '+':
     return first + second;
@@ -213,6 +215,7 @@ int ACode::doOp(const char op, const int first, const int second) const {
     return first / second;
     break;
   default:
+    cout << "LINE " << label << ": ";
     cout << "Operator not valid" << endl;
     exit(2);
     break;

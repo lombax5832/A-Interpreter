@@ -9,7 +9,7 @@ using namespace std;
 int main() {
 
   string input = "";
-  string test = "10/2/5";
+  string test = "(abc+2)/2";
 
   ACode code;
   //cout << code.infixToPostfix(test) << endl;
