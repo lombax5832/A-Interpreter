@@ -13,7 +13,7 @@ int main() {
 
   ACode code;
   //cout << code.infixToPostfix(test) << endl;
-  cout << code.resolveIdensInExpression(test) << endl;
+  cout << code.resolveIdensInExpression(test, 0, test.size()) << endl;
   //code.fromText(test);
   code.printLines();
 

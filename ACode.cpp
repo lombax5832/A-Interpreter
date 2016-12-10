@@ -227,38 +227,31 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
-string ACode::resolveIdensInExpression(const string &expr) const {
+string ACode::resolveIdensInExpression(const string &expr, size_t start, const size_t end) const {
   string toReturn = "";
-  string temp = "";
-  stringstream strm;
-  bool found = false;
-  for (size_t i = 0,j = 0; i < expr.size(); i++) {
-    cout <<'t'<< i << endl;
-    if ((expr[i] >= 'A'&&expr[i] <= 'Z') || (expr[i] >= 'a'&&expr[i] <= 'z')) {
-      for (j = i; j < expr.size(); j++) {
-        if (found) {
-          
-          //cout << "help" << endl;
-          strm << convertIdenToVal(expr.substr(i, j - i - 1));
-          cout << expr.substr(i, j - i - 1) << endl;
-          strm >> temp;
-          //cout << temp << endl;
-          toReturn += temp;
-          i = j - 1;
-          toReturn += expr[j - 1];
-          found = false;
-          break;
-        }else if (!((expr[j] >= 'A' && expr[j] <= 'Z') || (expr[j] >= 'a' && expr[j] <= 'z') || (expr[j] >= '0' && expr[j] <= '9'))) {
-          cout << j  << ":\'" << expr[j] << '\'' << endl;
-          found = true;
-        }
-        
-      }
-    } else {
-      toReturn += expr[i];
-    }
+  if (start == end) {
+    return "";
   }
-  return toReturn;
+  else if (((expr[start] >= 'a'&&expr[start] <= 'z') || (expr[start] >= 'A'&&expr[start] <= 'Z'))) {
+    for (size_t i = start; i <= end; i++) {
+      if ((i == end) || !((expr[i] >= 'a'&&expr[i] <= 'z') || (expr[i] >= 'A'&&expr[i] <= 'Z') || (expr[i] >= '0'&&expr[i] <= '9'))) {
+        string temp = "";
+        stringstream strm;
+        strm << convertIdenToVal(expr.substr(start, i - start));
+        strm >> temp;
+        toReturn = temp;
+        cout << toReturn << ';' << endl;
+        start = i-1;
+        break;
+      }
+    }
+  } else {
+    toReturn = expr[start];
+  }
+  start++;
+  //cout << start << " " << toReturn << endl;
+  cout << expr << ' ' << start << ' ' << end << endl;
+  return toReturn + resolveIdensInExpression(expr, start, end);
 }
 
 int ACode::convertIdenToVal(const string &var) const {
