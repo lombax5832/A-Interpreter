@@ -149,7 +149,6 @@ void ACode::fromKeyboard() {
       cout << "All lines cleared" << endl;
       continue;
     }
-    //cout << line << endl;
     if (line.find("del ", 0) == 0) {
       strm << line.substr(4, line.size() - 4) + ' ';
       strm >> tempLbl;
@@ -200,8 +199,6 @@ ALine ACode::textToLine(const string& input, const size_t begin, const size_t en
   nextWSorNum = nextNonWhitespaceOrNumber(input, begin);
 
   line = input.substr(nextWSorNum, end - nextWSorNum);
-
-  //cout << line << endl;
 
   return ALine(label, line);
 }
@@ -556,7 +553,6 @@ bool ACode::isVarStatementValid(const ALine & line) const {
         cout << "Variable name: " << tempVarIden << " not allowed" << endl;
       }
       pos = line.line.find('=', i);
-      //cout << pos << endl;
       if (pos == string::npos) {
         while (i < line.line.length()) {
           if (line.line[i] != ' ')
@@ -837,7 +833,6 @@ string ACode::resolveIdensInExpression(const string &expr, size_t &start,
 int ACode::convertIdenToVal(const string &var, const size_t label) const {
   vector<AVar>::const_iterator it = vars.begin();
   for (; it != vars.end(); it++) {
-    //cout << '\'' << it->iden << '\''  << endl << endl;
     if (it->iden == var && it->initialized) {
       return it->val;
     }
