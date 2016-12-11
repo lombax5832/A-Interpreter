@@ -442,7 +442,7 @@ string ACode::infixToPostfix(const string &infix) const {
           minusIsNegative = false;
         } else {
           minusIsNegative = true;
-          while (getOperatorPrecedance(opStack.top()) >= getOperatorPrecedance(infix[i])) {
+          while (getOperatorPrecedance(opStack.top())>=getOperatorPrecedance(infix[i])) {
             popOp = opStack.top();
             opStack.pop();
             postfix += popOp;
