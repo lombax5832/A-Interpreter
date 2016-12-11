@@ -223,10 +223,10 @@ void ACode::scanLines() const {
   for (; it != lines.end(); it++) {
     if (!validateLine(*it)) {
       errorDetected = true;
-      cout << "error on line:" << it->label << endl;
     }
   }
   if (errorDetected) {
+    cout << endl << "Syntax Errors detected, refer to above" << endl;
     exit(2);
   }
 }
@@ -442,10 +442,13 @@ bool ACode::isVarStatementValid(const ALine & line) const {
         i = pos + 1;
         while (i < line.line.length()) {
           if (isLetter(line.line[i])) {
-
+            cout << "LINE " << line.label << ": ";
+            cout << "VAR Statement may only assign a number to a variable" << endl;
             return false;
           }
-          if ((!isNumber(line.line[i]) || line.line[i] == ' ') && foundNum) {
+          if (!isNumber(line.line[i]) && foundNum) {
+            cout << "LINE " << line.label << ": ";
+            cout << "VAR Statement Invalid" << endl;
             return false;
           } else if (isNumber(line.line[i])) {
             foundNum = true;;
@@ -618,16 +621,15 @@ void ACode::doAssignStatement(const ALine & line) {
 }
 
 void ACode::executeCode(ALine &line) {
-  line = getLineOrAfter(handleLine(line));
-  executeCode(line);
+  while (true) {
+    line = getLineOrAfter(handleLine(line));
+  }
 }
 
 bool ACode::validateLine(const ALine &line) const {
   switch (getStatementType(line.line)) {
   case VAR:
     if (!isVarStatementValid(line)) {
-      cout << "LINE " << line.label << ": ";
-      cout << "Invalid VAR Statement" << endl << endl;
       return false;
     }
     return true;
@@ -635,7 +637,7 @@ bool ACode::validateLine(const ALine &line) const {
   case ASSIGNMENT:
     if (!isAssignStatementValid(line)) {
       cout << "LINE " << line.label << ": ";
-      cout << "Invalid ASSIGNMENT Statement" << endl << endl;
+      cout << "Invalid ASSIGNMENT Statement" << endl;
       return false;
     }
     return true;
@@ -643,7 +645,7 @@ bool ACode::validateLine(const ALine &line) const {
   case IF:
     if (!isIfStatementValid(line)) {
       cout << "LINE " << line.label << ": ";
-      cout << "Invalid IF Statement" << endl << endl;
+      cout << "IF Statement Invalid" << endl;
       return false;
     }
     return true;
@@ -651,7 +653,7 @@ bool ACode::validateLine(const ALine &line) const {
   case STOP:
     if (!(line.line.find("stop", 0) == 0 && line.line.length() == 4)) {
       cout << "LINE " << line.label << ": ";
-      cout << "Invalid STOP Statement" << endl << endl;
+      cout << "Invalid STOP Statement" << endl;
       return false;
     }
     return true;
@@ -659,14 +661,14 @@ bool ACode::validateLine(const ALine &line) const {
   case PRINT:
     if (!isPrintStatementValid(line)) {
       cout << "LINE " << line.label << ": ";
-      cout << "Invalid PRINT Statement" << endl << endl;
+      cout << "Invalid PRINT Statement" << endl;
       return false;
     }
     return true;
     break;
   case UNKNOWN:
     cout << "LINE " << line.label << ": ";
-    cout << "Invalid Statement, statement type unknown" << endl << endl;
+    cout << "Invalid Statement, statement type unknown" << endl;
     return false;
     break;
   }

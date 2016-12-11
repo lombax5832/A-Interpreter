@@ -54,10 +54,6 @@ public:
 
   void scanLines() const;
 
-  void doVarStatement(const ALine &line);
-
-  void doAssignStatement(const ALine &line);
-
   void executeCode(ALine &line);
 private:
   vector<ALine> lines;
@@ -109,6 +105,10 @@ private:
   void doPrintStatement(const ALine &line) const;
 
   void doStopStatement(const ALine &line) const;
+
+  void doVarStatement(const ALine &line);
+
+  void doAssignStatement(const ALine &line);
 
   const ALine& getLineOrAfter(const size_t label) const;
 };
