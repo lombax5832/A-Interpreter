@@ -124,7 +124,7 @@ void ACode::fromKeyboard() {
   cout << "Enter Lines of A++ code below." << endl;
   cout << "Code will be saved to the file, fromKeyboard.txt." << endl;
   cout << "Enter \"clear\" with no line label to delete all lines" << endl;
-  cout << "Enter \"del\" followed by a line label to delete line with given label" << endl;
+  cout << "Enter \"del\" followed by a line label to delete line with given label"<<endl;
   cout << "Enter \"end\" with no line label when finished entering A++ code" << endl;
 
   if (!fromFile("fromKeyboard.txt", false)) {
@@ -186,7 +186,7 @@ void ACode::printLines() const {
 }
 
 //Converts range of a string into a line and stores in lines vector
-ALine ACode::textToLine(const string& input, const size_t begin, const size_t end) const {
+ALine ACode::textToLine(const string& input, const size_t begin, const size_t end) const{
   size_t label = 0;
   string line = "";
   size_t nextWSorNum = 0;
@@ -233,7 +233,8 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
 }
 
 //Returns true if the inputted range of a string "stuff(thisIsAVar)stuff" is valid
-bool ACode::isValidIdentifier(const string &iden, const size_t start, const size_t end) const {
+bool ACode::isValidIdentifier(const string &iden, 
+  const size_t start, const size_t end) const {
   //Reserved words
   if (iden.find("var ", start) <= end) {
     return false;

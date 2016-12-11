@@ -7,11 +7,8 @@ using namespace std;
 #include"App.h"
 
 int main() {
-  string line = "if (toasty) goto32";
 
-  ALine line2(10, line);
   string input = "";
-  string test = "10 var test = 40;11 test = test-1;12 print test;16 if (35-test) goto 11;20 stop;";
 
   ACode code;
   
