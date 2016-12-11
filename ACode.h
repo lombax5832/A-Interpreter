@@ -48,7 +48,7 @@ public:
 
   int evalPostFix(const string &expr, const size_t label) const;
 
-  bool isVarStatementValid(const ALine &line) const;
+  void scanLines() const;
 private:
   vector<ALine> lines;
 
@@ -61,6 +61,8 @@ private:
   void modifyVar(const AVar, const size_t label);
   
   ALine textToLine(const string&, const size_t begin, const size_t end) const;
+
+  const ALine getLine(const size_t label) const;
 
   size_t nextNonWhitespaceOrNumber(const string&, const size_t begin) const;
 
@@ -82,7 +84,13 @@ private:
 
   void handleLine(const ALine &line);
 
-  void validateLine(const ALine &line) const;
+  bool validateLine(const ALine &line) const;
 
-  
+  bool isVarStatementValid(const ALine &line) const;
+
+  bool isAssignStatementValid(const ALine &line) const;
+
+  bool isIfStatementValid(const ALine &line) const;
+
+  bool isPrintStatementValid(const ALine &line) const;
 };

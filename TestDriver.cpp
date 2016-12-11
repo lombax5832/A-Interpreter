@@ -7,21 +7,21 @@ using namespace std;
 #include"ACode.h"
 
 int main() {
-  string line = "var you";
+  string line = "if (toasty) goto32";
 
   ALine line2(10, line);
   string input = "";
-  string test = "(abc+2)/2";
+  string test = "10 var test = 30;20 if (yes) goto 31;31 print test;33 test = 23;34 stop;";
 
   ACode code;
   //cout << code.infixToPostfix(test) << endl;
   //cout << code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())) << endl;
   //cout << code.evalPostFix(code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())), 1) << endl;
   //cout << code.resolveIdensInExpression(test, 0, test.size()) << endl;
-  //code.fromText(test);
+  code.fromText(test);
   code.printLines();
-
-  cout << code.isVarStatementValid(line2) << endl;
+  cout << endl;
+  code.scanLines();
 
   return 0;
 }

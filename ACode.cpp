@@ -10,7 +10,7 @@ using namespace std;
 ACode::ACode() {
   //test var
   vars.push_back(AVar("abc", 20));
-  addline(ALine(32, "var asdf"));
+  //addline(ALine(32, "var asdf"));
 }
 
 ACode::ACode(const string &input) {
@@ -98,6 +98,16 @@ ALine ACode::textToLine(const string& input, const size_t begin, const size_t en
   //cout << line << endl;
 
   return ALine(label, line);
+}
+
+const ALine ACode::getLine(const size_t label) const {
+  vector<ALine>::const_iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    if (it->label == label) {
+      return (*it);
+    }
+  }
+  return ALine(0, "");
 }
 
 //Returns the pos of the next non-whitespace char after the label
@@ -197,6 +207,20 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
     exit(2);
   }
   return stk.top();
+}
+
+void ACode::scanLines() const {
+  vector<ALine>::const_iterator it = lines.begin();
+  //chop off trailing blank spaces
+  bool errorDetected = false;
+  for (; it != lines.end(); it++) {
+    if (!validateLine(*it)) {
+      errorDetected = true;
+    }
+  }
+  if (errorDetected) {
+    exit(2);
+  }
 }
 
 int ACode::doOp(const char op, const int first, const int second, const size_t label) const {
@@ -304,7 +328,7 @@ STATEMENT ACode::getStatementType(const string &line) const {
   if (line.find("var ", 0) == 0) {
     return VAR;
   }
-  else if (doesVarExist(line.substr(0, line.find('=', 0) - 1))) {
+  else if ((line.find("var ", 0) == string::npos) && (line.find('=', 0) != string::npos)) {
     return ASSIGNMENT;
   }
   else if ((line.find("goto ", 0) != string::npos) && (line.find("if ", 0) == 0)) {
@@ -355,9 +379,9 @@ void ACode::handleLine(const ALine &line) {
     break;
   case IF:
     break;
-  case STOP:
-    break;
   case PRINT:
+    break;
+  case STOP:
     break;
   case UNKNOWN:
     break;
@@ -409,27 +433,113 @@ bool ACode::isVarStatementValid(const ALine & line) const {
     } else {
       return false;
     }
+  } else {
+    return false;
   }
 }
 
-void ACode::validateLine(const ALine &line) const {
+bool ACode::isAssignStatementValid(const ALine & line) const {
+  size_t pos = line.line.find('=', 0)+1;
+  for (; pos < line.line.size(); pos++) {
+    if (line.line[pos] != ' ') {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ACode::isIfStatementValid(const ALine & line) const {
+  size_t firstOpenParen = line.line.find('(', 0);
+  size_t lastOpenParen = 0;
+  size_t gotoPos = line.line.find("goto ", 0);
+  string labelString = "";
+  size_t label = 0;
+  stringstream strm;
+
+  if (gotoPos == string::npos || firstOpenParen == string::npos) {
+    return false;
+  }
+
+  for (size_t i = line.line.find("if ", 0) + 2; i < firstOpenParen;i++) {
+    if (line.line[i] != ' ') {
+      return false;
+    }
+  }
+  for (size_t i = gotoPos - 1; i > firstOpenParen; i--) {
+    if (line.line[i] == ')') {
+      lastOpenParen = i;
+      break;
+    } else if (line.line[i] != ' ') {
+      return false;
+    }
+  }
+  for (size_t i = gotoPos + 5; i < line.line.length(); i++) {
+    if (isNumber(line.line[i])) {
+      labelString += line.line[i];
+    } else if (line.line[i] != ' ') {
+      return false;
+    }
+  }
+  strm << labelString;
+  strm >> label;
+  ALine tempLine = getLine(label);
+  return ((tempLine.line != "") && (tempLine.label != 0));
+}
+
+bool ACode::isPrintStatementValid(const ALine & line) const {
+  for (size_t i = 6; i < line.line.length(); i++) {
+    if (isAlphanumeric(line.line[i])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ACode::validateLine(const ALine &line) const {
   switch (getStatementType(line.line)) {
   case VAR:
     if (!isVarStatementValid(line)) {
       cout << "LINE " << line.label << ": ";
-      cout << "Invalid VAR Statement" << endl;
-      exit(2);
+      cout << "Invalid VAR Statement" << endl << endl;
+      return false;
     }
+    return true;
     break;
   case ASSIGNMENT:
+    if (!isAssignStatementValid(line)) {
+      cout << "LINE " << line.label << ": ";
+      cout << "Invalid ASSIGNMENT Statement" << endl << endl;
+      return false;
+    }
+    return true;
     break;
   case IF:
+    if (!isIfStatementValid(line)) {
+      cout << "LINE " << line.label << ": ";
+      cout << "Invalid IF Statement" << endl << endl;
+      return false;
+    }
+    return true;
     break;
   case STOP:
+    if (!(line.line.find("stop", 0) == 0 && line.line.length() == 4)) {
+      cout << "LINE " << line.label << ": ";
+      cout << "Invalid STOP Statement" << endl << endl;
+      return false;
+    }
+    return true;
     break;
   case PRINT:
+    if (!isPrintStatementValid(line)) {
+      cout << "LINE " << line.label << ": ";
+      cout << "Invalid PRINT Statement" << endl << endl;
+      return false;
+    }
     break;
   case UNKNOWN:
+    cout << "LINE " << line.label << ": ";
+    cout << "Invalid Statement, statement type unknown" << endl << endl;
+    return false;
     break;
   }
 }
