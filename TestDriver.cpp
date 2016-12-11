@@ -11,7 +11,7 @@ int main() {
 
   ALine line2(10, line);
   string input = "";
-  string test = "10 var test = 3000;11 test = test-1;12 print test;16 if (35-test) goto 11;20 stop;";
+  string test = "10 var test = 40;11 test = test-1;12 print test;16 if (35-test) goto 11;20 stop;";
 
   ACode code;
 
@@ -19,8 +19,7 @@ int main() {
   code.printLines();
   cout << endl;
   code.scanLines();
-  ALine lineT(code.firstLine());
-  code.executeCode(lineT);
+  code.executeCode();
 
   return 0;
 }

@@ -17,7 +17,7 @@ ACode::ACode(const string &input) {
 }
 
 const ALine& ACode::firstLine() const {
-  if(!lines.empty())
+  if (!lines.empty())
     return lines[0];
   cout << "ERROR NO ENTRY POINT" << endl << endl;
   exit(2);
@@ -56,8 +56,7 @@ void ACode::modifyVar(const AVar toModify, const size_t label, bool strict) {
   }
   if (!strict) {
     addVar(toModify, label);
-  }
-  else {
+  } else {
     cout << "LINE " << label << ": ";
     cout << "ERROR, variable does not exist." << endl;
   }
@@ -72,10 +71,13 @@ void ACode::fromText(const string &input) {
 
   while (pos != string::npos) {
     addline(textToLine(input, lastPos, pos));
-
     lastPos = pos + 1;
     pos = input.find(";", pos + 1);
   }
+}
+
+void ACode::fromFile(const string & file) {
+
 }
 
 //Prints all stored lines
@@ -128,9 +130,9 @@ size_t ACode::nextNonWhitespaceOrNumber(const string &input, const size_t begin)
       foundWsAfterNum = true;
     } else if (isNumber(input[i])) {
       foundNum = true;
-    } 
+    }
 
-    if(foundWsAfterNum && input[i] != ' ')
+    if (foundWsAfterNum && input[i] != ' ')
       return i;
   }
   return string::npos;
@@ -183,7 +185,7 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
     } else if (toAdd != "") {
       strm << toAdd + " ";
       toAdd = "";
-      converted=0;
+      converted = 0;
       strm >> converted;
       stk.push(converted);
     }
@@ -282,7 +284,7 @@ string ACode::infixToPostfix(const string &infix) const {
           i = j;
           if (isNumber(infix[j])) {
             postfix += infix[i];
-            
+
           } else {
             postfix += ' ';
             minusIsNegative = false;
@@ -335,17 +337,13 @@ string ACode::infixToPostfix(const string &infix) const {
 STATEMENT ACode::getStatementType(const string &line) const {
   if (line.find("var ", 0) == 0) {
     return VAR;
-  }
-  else if ((line.find("var ", 0) == string::npos) && (line.find('=', 0) != string::npos)) {
+  } else if ((line.find("var ", 0) == string::npos) && (line.find('=', 0) != string::npos)) {
     return ASSIGNMENT;
-  }
-  else if ((line.find("goto ", 0) != string::npos) && (line.find("if ", 0) == 0)) {
+  } else if ((line.find("goto ", 0) != string::npos) && (line.find("if ", 0) == 0)) {
     return IF;
-  }
-  else if (line.find("print ", 0) == 0) {
+  } else if (line.find("print ", 0) == 0) {
     return PRINT;
-  }
-  else if (line.find("stop", 0) == 0) {
+  } else if (line.find("stop", 0) == 0) {
     return STOP;
   }
   return UNKNOWN;
@@ -416,7 +414,7 @@ bool ACode::isVarStatementValid(const ALine & line) const {
   size_t pos = line.line.find("var ", 0);
   string tempVarIden = "";
   bool foundNum = false;
-  size_t i = pos+4; //4 = size of "var "
+  size_t i = pos + 4; //4 = size of "var "
 
   if (pos != string::npos) {
     while (line.line[i] == ' ' && i < line.line.length()) {
@@ -428,6 +426,10 @@ bool ACode::isVarStatementValid(const ALine & line) const {
       while (isAlphanumeric(line.line[i]) && i < line.line.length()) {
         tempVarIden += line.line[i];
         i++;
+      }
+      if (!isValidIdentifier(tempVarIden, 0, tempVarIden.length()-1)) {
+        cout << "LINE " << line.label << ": ";
+        cout << "Variable name: " << tempVarIden << " not allowed" << endl;
       }
       pos = line.line.find('=', i);
       //cout << pos << endl;
@@ -466,7 +468,7 @@ bool ACode::isVarStatementValid(const ALine & line) const {
 }
 
 bool ACode::isAssignStatementValid(const ALine & line) const {
-  size_t pos = line.line.find('=', 0)+1;
+  size_t pos = line.line.find('=', 0) + 1;
   for (; pos < line.line.size(); pos++) {
     if (line.line[pos] != ' ') {
       return true;
@@ -487,7 +489,7 @@ bool ACode::isIfStatementValid(const ALine & line) const {
     return false;
   }
 
-  for (size_t i = line.line.find("if ", 0) + 2; i < firstOpenParen;i++) {
+  for (size_t i = line.line.find("if ", 0) + 2; i < firstOpenParen; i++) {
     if (line.line[i] != ' ') {
       return false;
     }
@@ -620,7 +622,8 @@ void ACode::doAssignStatement(const ALine & line) {
   modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, true);
 }
 
-void ACode::executeCode(ALine &line) {
+void ACode::executeCode() {
+  ALine line = firstLine();
   while (true) {
     line = getLineOrAfter(handleLine(line));
   }
@@ -681,8 +684,7 @@ string ACode::resolveIdensInExpression(const string &expr, size_t &start, const 
   string toReturn = "";
   if (start == end) {
     return "";
-  }
-  else if (isLetter(expr[start])) {
+  } else if (isLetter(expr[start])) {
     for (size_t i = start; i <= end; i++) {
       if ((i == end) || !isAlphanumeric(expr[i])) {
         string temp = "";
@@ -690,7 +692,7 @@ string ACode::resolveIdensInExpression(const string &expr, size_t &start, const 
         strm << convertIdenToVal(expr.substr(start, i - start), label);
         strm >> temp;
         toReturn = temp;
-        start = i-1;
+        start = i - 1;
         break;
       }
     }

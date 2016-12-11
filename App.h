@@ -40,21 +40,13 @@ public:
 
   void fromText(const string&);
 
-  void printLines() const;
-  
-  STATEMENT getStatementType(const string &line) const;
+  void fromFile(const string &file);
 
-  int convertIdenToVal(const string &var, const size_t label) const;
-
-  string infixToPostfix(const string &infix) const;
-
-  string resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const;
-
-  int evalPostFix(const string &expr, const size_t label) const;
+  void printLines() const;  
 
   void scanLines() const;
 
-  void executeCode(ALine &line);
+  void executeCode();
 private:
   vector<ALine> lines;
 
@@ -111,4 +103,14 @@ private:
   void doAssignStatement(const ALine &line);
 
   const ALine& getLineOrAfter(const size_t label) const;
+
+  STATEMENT getStatementType(const string &line) const;
+
+  int convertIdenToVal(const string &var, const size_t label) const;
+
+  string infixToPostfix(const string &infix) const;
+
+  string resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const;
+
+  int evalPostFix(const string &expr, const size_t label) const;
 };
