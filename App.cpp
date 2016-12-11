@@ -9,36 +9,42 @@ using namespace std;
 #include<fstream>
 
 ACode::ACode() {
-  //test var
-  //vars.push_back(AVar("abc", 20, true));
-  //addline(ALine(32, "var asdf"));
-}
-
-ACode::ACode(const string &input) {
 }
 
 const ALine& ACode::firstLine() const {
   if (!lines.empty())
     return lines[0];
-  cout << "ERROR NO ENTRY POINT" << endl << endl;
+  cout << "ERROR NO LINES" << endl << endl;
   exit(2);
 }
 
 //Adds a line to lines vector if label is greater than previous label
-void ACode::addline(const ALine line) {
+void ACode::addline(const ALine line, bool strict) {
   //Preserves order to use binary search later
   if (lines.empty()) {
     lines.push_back(line);
     return;
   }
-
-  if (line.label > lines.back().label) {
-    lines.push_back(line);
-  } else {
-    cout << "LINE " << line.label << ": ";
-    cout << "ERROR, added label must be larger than previous labels." << endl;
-    exit(2);
+  vector<ALine>::iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    if (line.label < it->label) {
+      if (strict) {
+        cout << "LINE " << line.label << ": ";
+        cout << "ERROR, added label must be larger than previous labels." << endl;
+        exit(2);
+      }
+      lines.insert(it, line);
+      return;
+    }
   }
+  lines.push_back(line);
+  //if (line.label > lines.back().label) {
+  //  lines.push_back(line);
+  //} else {
+  //  cout << "LINE " << line.label << ": ";
+  //  cout << "ERROR, added label must be larger than previous labels." << endl;
+  //  exit(2);
+  //}
 }
 
 void ACode::addVar(const AVar toAdd, const size_t label) {
@@ -52,6 +58,7 @@ void ACode::modifyVar(const AVar toModify, const size_t label, bool strict) {
   for (; it != vars.end(); it++) {
     if (it->iden == toModify.iden) {
       it->val = toModify.val;
+      it->initialized = toModify.initialized;
       return;
     }
   }
@@ -71,7 +78,7 @@ void ACode::fromText(const string &input) {
   pos = input.find(";", 0);
 
   while (pos != string::npos) {
-    addline(textToLine(input, lastPos, pos));
+    addline(textToLine(input, lastPos, pos), true);
     lastPos = pos + 1;
     pos = input.find(";", pos + 1);
   }
@@ -88,7 +95,7 @@ bool ACode::fromFile(const string & file, bool strict) {
     cout << "Error, file could not be found." << endl;
     exit(2);
   }
-
+  
   while (!strm.eof()) {
     getline(strm, line);
     pos = line.find(';', 0);
@@ -100,7 +107,7 @@ bool ACode::fromFile(const string & file, bool strict) {
       cout << "Error, lines must end in a \';\'" << endl;
       exit(2);
     }
-    addline(textToLine(line, 0, pos));
+    addline(textToLine(line, 0, pos), true);
   }
   strm.close();
   return true;
@@ -116,20 +123,37 @@ void ACode::fromKeyboard() {
   cout << "-------- Keyboard A++ File Entry --------" << endl << endl;
   cout << "Enter Lines of A++ code below." << endl;
   cout << "Code will be saved to the file, fromKeyboard.txt." << endl;
+  cout << "Enter \"clear\" with no line label to delete all lines" << endl;
+  cout << "Enter \"del\" followed by a line label to delete line with given label" << endl;
   cout << "Enter \"end\" with no line label when finished entering A++ code" << endl;
+
   if (!fromFile("fromKeyboard.txt", false)) {
     cout << "File does not exist, or errors exist." << endl;
     cout << "Starting with blank A++ code." << endl << endl;
   } else {
     cout << "Loaded code will be displayed below :" << endl << endl;
     printLines();
+    cout << "-----------------------------------------" << endl << endl;
   }
   //cin >> line;
-  while (line != "end") {
-    cin >> line;
+  while (true) {
+    getline(cin, line);
+    if (line == "") {
+      continue;
+    }
+    if (line == "end") {
+      break;
+    }
+    if (line == "clear") {
+      lines.clear();
+      cout << "All lines cleared" << endl;
+      continue;
+    }
+    //cout << line << endl;
     if (line.find("del ", 0) == 0) {
-      strm << line.substr(4, line.size() - 5);
+      strm << line.substr(4, line.size() - 4) + ' ';
       strm >> tempLbl;
+      cout << tempLbl << endl;
       if (delLineAt(tempLbl)) {
         cout << "Line successfully deleted." << endl;
       } else {
@@ -147,9 +171,10 @@ void ACode::fromKeyboard() {
       cout << "Line already exists at " << tempLine.label << endl;
       cout << "Enter \"del " << tempLine.label << "\" to remove it first" << endl;
     } else {
-      
+      addline(textToLine(line, 0, pos), false);
     }
   }
+  toFile("fromKeyboard.txt");
 }
 
 //Prints all stored lines
@@ -284,7 +309,7 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
   }
   if (stk.size() != 1) {
     cout << "LINE " << label << ": ";
-    cout << "More than 1 item in stack after expression is handled!" << endl;
+    cout << "Error processing expression!" << endl;
     exit(2);
   }
   return stk.top();
@@ -311,6 +336,15 @@ bool ACode::delLineAt(const size_t label) {
   return false;
 }
 
+void ACode::toFile(const string & file) const {
+  ofstream ostrm(file);
+  vector<ALine>::const_iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    ostrm << it->label << ' ' << it->line << ';' << endl;
+  }
+  ostrm.close();
+}
+
 void ACode::scanLines() const {
   vector<ALine>::const_iterator it = lines.begin();
   bool errorDetected = false;
@@ -318,6 +352,11 @@ void ACode::scanLines() const {
     if (!validateLine(*it)) {
       errorDetected = true;
     }
+  }
+  it--;
+  if (it->line != "stop") {
+    cout << "Last line must be a stop statement" << endl;
+    errorDetected = true;
   }
   if (errorDetected) {
     cout << endl << "Syntax Errors detected, refer to above" << endl;
@@ -444,7 +483,6 @@ STATEMENT ACode::getStatementType(const string &line) const {
 //Returns whether or not the variable exists in the vars vector
 bool ACode::doesVarExist(const string & var) const {
   vector<AVar>::const_iterator it = vars.begin();
-  //chop off trailing blank spaces
   string internalVar = var.substr(0, var.find(' ', 0) - 1);
   for (; it != vars.end(); it++) {
     if (it->iden == internalVar) {
@@ -471,26 +509,20 @@ bool ACode::isOperator(const char input) const {
 
 const size_t ACode::handleLine(const ALine &line) {
   size_t nextLine = line.label + 1;
-  //cout << "lin: " << nextLine << endl;
   switch (getStatementType(line.line)) {
   case VAR:
-    //cout << "VAR" << endl;
     doVarStatement(line);
     break;
   case ASSIGNMENT:
-    //cout << "ASSIGNMENT" << endl;
     doAssignStatement(line);
     break;
   case IF:
-    //cout << "IF" << endl;
     nextLine = doIfStatement(line);
     break;
   case PRINT:
-    //cout << "PRINT" << endl;
     doPrintStatement(line);
     break;
   case STOP:
-    //cout << "STOP" << endl;
     doStopStatement(line);
     break;
   case UNKNOWN:
@@ -642,7 +674,8 @@ size_t ACode::doIfStatement(const ALine & line) const {
   strm >> gotoLabel;
   openParenPos++;
 
-  if (evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, openParenPos, closeParenPos, line.label)) + ' ', line.label) != 0) {
+  if (evalPostFix(infixToPostfix(resolveIdensInExpression(line.line,
+    openParenPos, closeParenPos, line.label)) + ' ', line.label) != 0) {
     return gotoLabel;
   }
   return line.label + 1;
@@ -651,7 +684,8 @@ size_t ACode::doIfStatement(const ALine & line) const {
 void ACode::doPrintStatement(const ALine & line) const {
   //print <expression>
   size_t i = string("print ").length();
-  cout << evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, i, line.line.length(), line.label)) + ' ', line.label) << endl;
+  cout << evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, i,
+    line.line.length(), line.label)) + ' ', line.label) << endl;
 }
 
 void ACode::doStopStatement(const ALine & line) const {
@@ -685,11 +719,12 @@ void ACode::doVarStatement(const ALine & line) {
     }
   }
 
-  //cout << '\'' << varIden << '\'' << endl << endl;
-
   if (equalPos != string::npos) {
     equalPos++;
-    modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, false);
+    modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, 
+      equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, false);
+  } else {
+    modifyVar(AVar(varIden, 0, false), line.label, false);
   }
 }
 
@@ -711,12 +746,13 @@ void ACode::doAssignStatement(const ALine & line) {
     }
   }
   equalPos++;
-  modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, true);
+  modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, 
+    equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, true);
 }
 
 void ACode::executeCode() {
-  scanLines();
   ALine line = firstLine();
+  scanLines();
   while (true) {
     line = getLineOrAfter(handleLine(line));
   }
@@ -773,7 +809,8 @@ bool ACode::validateLine(const ALine &line) const {
 
 //EXPRESSION
 //<char> <expression> | <var> <expression>
-string ACode::resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const {
+string ACode::resolveIdensInExpression(const string &expr, size_t &start,
+  const size_t &end, const size_t &label) const {
   string toReturn = "";
   if (start == end) {
     return "";
