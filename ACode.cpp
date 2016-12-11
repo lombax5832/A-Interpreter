@@ -9,11 +9,18 @@ using namespace std;
 
 ACode::ACode() {
   //test var
-  vars.push_back(AVar("abc", 20));
+  //vars.push_back(AVar("abc", 20, true));
   //addline(ALine(32, "var asdf"));
 }
 
 ACode::ACode(const string &input) {
+}
+
+const ALine& ACode::firstLine() const {
+  if(!lines.empty())
+    return lines[0];
+  cout << "ERROR NO ENTRY POINT" << endl << endl;
+  exit(2);
 }
 
 //Adds a line to lines vector if label is greater than previous label
@@ -36,24 +43,24 @@ void ACode::addline(const ALine line) {
 void ACode::addVar(const AVar toAdd, const size_t label) {
   if (!doesVarExist(toAdd.iden)) {
     vars.push_back(toAdd);
-  } else {
-    cout << "LINE " << label << ": ";
-    cout << "Var " << toAdd.iden << " already exists." << endl;
-    exit(2);
   }
 }
 
-void ACode::modifyVar(const AVar toModify, const size_t label) {
+void ACode::modifyVar(const AVar toModify, const size_t label, bool strict) {
   vector<AVar>::iterator it = vars.begin();
   for (; it != vars.end(); it++) {
     if (it->iden == toModify.iden) {
       it->val = toModify.val;
-      break;
+      return;
     }
   }
-  cout << "LINE " << label << ": ";
-  cout << "Var " << toModify.iden << " does not exist." << endl;
-  exit(2);
+  if (!strict) {
+    addVar(toModify, label);
+  }
+  else {
+    cout << "LINE " << label << ": ";
+    cout << "ERROR, variable does not exist." << endl;
+  }
 }
 
 //Using a large string, stores lines in lines vector
@@ -216,6 +223,7 @@ void ACode::scanLines() const {
   for (; it != lines.end(); it++) {
     if (!validateLine(*it)) {
       errorDetected = true;
+      cout << "error on line:" << it->label << endl;
     }
   }
   if (errorDetected) {
@@ -371,21 +379,37 @@ bool ACode::isOperator(const char input) const {
   return getOperatorPrecedance(input) != -1;
 }
 
-void ACode::handleLine(const ALine &line) {
+const size_t ACode::handleLine(const ALine &line) {
+  size_t nextLine = line.label + 1;
+  //cout << "lin: " << nextLine << endl;
   switch (getStatementType(line.line)) {
   case VAR:
+    //cout << "VAR" << endl;
+    doVarStatement(line);
     break;
   case ASSIGNMENT:
+    //cout << "ASSIGNMENT" << endl;
+    doAssignStatement(line);
     break;
   case IF:
+    //cout << "IF" << endl;
+    nextLine = doIfStatement(line);
     break;
   case PRINT:
+    //cout << "PRINT" << endl;
+    doPrintStatement(line);
     break;
   case STOP:
+    //cout << "STOP" << endl;
+    doStopStatement(line);
     break;
   case UNKNOWN:
+    cout << "LINE " << line.label << ": ";
+    cout << "Unknown statement" << endl << endl;
+    exit(2);
     break;
   }
+  return nextLine;
 }
 
 bool ACode::isVarStatementValid(const ALine & line) const {
@@ -495,6 +519,109 @@ bool ACode::isPrintStatementValid(const ALine & line) const {
   return false;
 }
 
+size_t ACode::doIfStatement(const ALine & line) const {
+  string varIden = "";
+  string expression = "";
+  size_t openParenPos = line.line.find('(', 0);
+  size_t closeParenPos = 0;
+  size_t gotoPos = line.line.find("goto ", 0);
+  size_t gotoLabel = 0;
+  string labelString = "";
+
+  stringstream strm;
+
+  for (size_t i = gotoPos; i > openParenPos; i--) {
+    if (line.line[i] == ')') {
+      closeParenPos = i;
+      break;
+    }
+  }
+  for (size_t i = gotoPos + 5; i < line.line.length(); i++) {
+    if (isNumber(line.line[i])) {
+      labelString += line.line[i];
+    }
+  }
+  strm << labelString;
+  strm >> gotoLabel;
+  openParenPos++;
+
+  if (evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, openParenPos, closeParenPos, line.label)) + ' ', line.label) != 0) {
+    return gotoLabel;
+  }
+  return line.label + 1;
+}
+
+void ACode::doPrintStatement(const ALine & line) const {
+  //print <expression>
+  size_t i = string("print ").length();
+  cout << evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, i, line.line.length(), line.label)) + ' ', line.label) << endl;
+}
+
+void ACode::doStopStatement(const ALine & line) const {
+  exit(0);
+}
+
+const ALine & ACode::getLineOrAfter(const size_t label) const {
+  vector<ALine>::const_iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    if (it->label >= label) {
+      return *(it);
+    }
+  }
+  cout << "LINE " << label << ": ";
+  cout << "No line after " << label << endl << endl;
+  exit(2);
+  return *it;
+}
+
+void ACode::doVarStatement(const ALine & line) {
+  string varIden = "";
+  string expression = "";
+  bool exprFound = false;
+  size_t equalPos = line.line.find('=', 4);
+
+  for (size_t i = 4; i < line.line.length(); i++) {
+    if (isAlphanumeric(line.line[i])) {
+      varIden += line.line[i];
+    } else {
+      break;
+    }
+  }
+
+  //cout << '\'' << varIden << '\'' << endl << endl;
+
+  if (equalPos != string::npos) {
+    equalPos++;
+    modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, false);
+  }
+}
+
+void ACode::doAssignStatement(const ALine & line) {
+  string varIden = "";
+  string expression = "";
+  bool found = false;
+  size_t equalPos = line.line.find('=', 0);
+  for (size_t i = 0; i < equalPos; i++) {
+    if (found) {
+      if (line.line[i] == ' ' || line.line[i] == '=') {
+        break;
+      } else {
+        varIden += line.line[i];
+      }
+    } else if (isLetter(line.line[i])) {
+      varIden += line.line[i];
+      found = true;
+    }
+  }
+  equalPos++;
+  modifyVar(AVar(varIden, evalPostFix(infixToPostfix(resolveIdensInExpression(line.line, equalPos, line.line.size(), line.label)) + ' ', line.label), true), line.label, true);
+}
+
+void ACode::executeCode(ALine &line) {
+  line = getLineOrAfter(handleLine(line));
+  executeCode(line);
+}
+
 bool ACode::validateLine(const ALine &line) const {
   switch (getStatementType(line.line)) {
   case VAR:
@@ -535,6 +662,7 @@ bool ACode::validateLine(const ALine &line) const {
       cout << "Invalid PRINT Statement" << endl << endl;
       return false;
     }
+    return true;
     break;
   case UNKNOWN:
     cout << "LINE " << line.label << ": ";
@@ -542,11 +670,12 @@ bool ACode::validateLine(const ALine &line) const {
     return false;
     break;
   }
+  return false;
 }
 
 //EXPRESSION
 //<char> <expression> | <var> <expression>
-string ACode::resolveIdensInExpression(const string &expr, size_t start, const size_t end) const {
+string ACode::resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const {
   string toReturn = "";
   if (start == end) {
     return "";
@@ -556,7 +685,7 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
       if ((i == end) || !isAlphanumeric(expr[i])) {
         string temp = "";
         stringstream strm;
-        strm << convertIdenToVal(expr.substr(start, i - start));
+        strm << convertIdenToVal(expr.substr(start, i - start), label);
         strm >> temp;
         toReturn = temp;
         start = i-1;
@@ -567,16 +696,19 @@ string ACode::resolveIdensInExpression(const string &expr, size_t start, const s
     toReturn = expr[start];
   }
   start++;
-  return toReturn + resolveIdensInExpression(expr, start, end);
+  return toReturn + resolveIdensInExpression(expr, start, end, label);
 }
 
 //Finds the corresponding variable in the vars vector and returns the value
-int ACode::convertIdenToVal(const string &var) const {
+int ACode::convertIdenToVal(const string &var, const size_t label) const {
   vector<AVar>::const_iterator it = vars.begin();
   for (; it != vars.end(); it++) {
-    if (it->iden == var) {
+    //cout << '\'' << it->iden << '\''  << endl << endl;
+    if (it->iden == var && it->initialized) {
       return it->val;
     }
   }
-  return 0;
+  cout << "LINE " << label << ": ";
+  cout << "Variable " << '\'' << var << '\'' << " uninitialized." << endl << endl;
+  exit(2);
 }

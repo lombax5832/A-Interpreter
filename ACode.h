@@ -20,9 +20,11 @@ struct ALine {
 struct AVar {
   string iden;
   int val;
-  AVar(string id, int in) {
+  bool initialized;
+  AVar(string id, int in, bool decl) {
     iden = id;
     val = in;
+    initialized = decl;
   }
   AVar* AVar::getThis() {
     return this;
@@ -34,21 +36,29 @@ public:
   ACode();
   ACode(const string&);
 
+  const ALine& firstLine() const;
+
   void fromText(const string&);
 
   void printLines() const;
   
   STATEMENT getStatementType(const string &line) const;
 
-  int convertIdenToVal(const string &var) const;
+  int convertIdenToVal(const string &var, const size_t label) const;
 
   string infixToPostfix(const string &infix) const;
 
-  string resolveIdensInExpression(const string &expr, size_t start, const size_t end) const;
+  string resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const;
 
   int evalPostFix(const string &expr, const size_t label) const;
 
   void scanLines() const;
+
+  void doVarStatement(const ALine &line);
+
+  void doAssignStatement(const ALine &line);
+
+  void executeCode(ALine &line);
 private:
   vector<ALine> lines;
 
@@ -58,7 +68,7 @@ private:
 
   void addVar(const AVar, const size_t label);
 
-  void modifyVar(const AVar, const size_t label);
+  void modifyVar(const AVar, const size_t label, bool strict);
   
   ALine textToLine(const string&, const size_t begin, const size_t end) const;
 
@@ -82,7 +92,7 @@ private:
 
   bool isOperator(const char input) const;
 
-  void handleLine(const ALine &line);
+  const size_t handleLine(const ALine &line);
 
   bool validateLine(const ALine &line) const;
 
@@ -93,4 +103,12 @@ private:
   bool isIfStatementValid(const ALine &line) const;
 
   bool isPrintStatementValid(const ALine &line) const;
+
+  size_t doIfStatement(const ALine &line) const;
+
+  void doPrintStatement(const ALine &line) const;
+
+  void doStopStatement(const ALine &line) const;
+
+  const ALine& getLineOrAfter(const size_t label) const;
 };

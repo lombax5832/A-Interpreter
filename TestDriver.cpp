@@ -11,17 +11,16 @@ int main() {
 
   ALine line2(10, line);
   string input = "";
-  string test = "10 var test = 30;20 if (yes) goto 31;31 print test;33 test = 23;34 stop;";
+  string test = "1 print 30;10 var test = 30;11 print test;12 test = test+1;13 print test;16 if (0) goto 11;20 stop;";
 
   ACode code;
-  //cout << code.infixToPostfix(test) << endl;
-  //cout << code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())) << endl;
-  //cout << code.evalPostFix(code.infixToPostfix(code.resolveIdensInExpression(test, 0, test.size())), 1) << endl;
-  //cout << code.resolveIdensInExpression(test, 0, test.size()) << endl;
+
   code.fromText(test);
   code.printLines();
   cout << endl;
   code.scanLines();
+  ALine lineT(code.firstLine());
+  code.executeCode(lineT);
 
   return 0;
 }
