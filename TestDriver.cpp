@@ -15,7 +15,8 @@ int main() {
 
   ACode code;
 
-  code.fromText(test);
+  code.fromFile("file.txt");
+  //code.fromText(test);
   code.printLines();
   cout << endl;
   code.scanLines();

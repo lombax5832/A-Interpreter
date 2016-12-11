@@ -6,6 +6,7 @@ using namespace std;
 #include<sstream>
 #include<cmath>
 #include<stack>
+#include<fstream>
 
 ACode::ACode() {
   //test var
@@ -76,8 +77,79 @@ void ACode::fromText(const string &input) {
   }
 }
 
-void ACode::fromFile(const string & file) {
+bool ACode::fromFile(const string & file, bool strict) {
+  ifstream strm(file);
+  string line = "";
+  size_t pos = 0;
 
+  if (!strm) {
+    if (!strict)
+      return false;
+    cout << "Error, file could not be found." << endl;
+    exit(2);
+  }
+
+  while (!strm.eof()) {
+    getline(strm, line);
+    pos = line.find(';', 0);
+    if (pos == string::npos) {
+      if (!strict) {
+        strm.close();
+        return false;
+      }
+      cout << "Error, lines must end in a \';\'" << endl;
+      exit(2);
+    }
+    addline(textToLine(line, 0, pos));
+  }
+  strm.close();
+  return true;
+}
+
+void ACode::fromKeyboard() {
+  string line = "";
+  size_t pos = 0;
+  ALine tempLine(0, "");
+  size_t tempLbl = 0;
+  stringstream strm;
+
+  cout << "-------- Keyboard A++ File Entry --------" << endl << endl;
+  cout << "Enter Lines of A++ code below." << endl;
+  cout << "Code will be saved to the file, fromKeyboard.txt." << endl;
+  cout << "Enter \"end\" with no line label when finished entering A++ code" << endl;
+  if (!fromFile("fromKeyboard.txt", false)) {
+    cout << "File does not exist, or errors exist." << endl;
+    cout << "Starting with blank A++ code." << endl << endl;
+  } else {
+    cout << "Loaded code will be displayed below :" << endl << endl;
+    printLines();
+  }
+  //cin >> line;
+  while (line != "end") {
+    cin >> line;
+    if (line.find("del ", 0) == 0) {
+      strm << line.substr(4, line.size() - 5);
+      strm >> tempLbl;
+      if (delLineAt(tempLbl)) {
+        cout << "Line successfully deleted." << endl;
+      } else {
+        cout << "Line not found." << endl;
+      }
+      continue;
+    }
+    pos = line.find(';', 0);
+    if (pos == string::npos) {
+      cout << "Line must end in a \';\', try again." << endl;
+      continue;
+    }
+    tempLine = textToLine(line, 0, pos);
+    if (doesLineExist(tempLine.label)) {
+      cout << "Line already exists at " << tempLine.label << endl;
+      cout << "Enter \"del " << tempLine.label << "\" to remove it first" << endl;
+    } else {
+      
+    }
+  }
 }
 
 //Prints all stored lines
@@ -218,9 +290,29 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
   return stk.top();
 }
 
+bool ACode::doesLineExist(const size_t label) const {
+  vector<ALine>::const_iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    if (it->label == label) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ACode::delLineAt(const size_t label) {
+  vector<ALine>::const_iterator it = lines.begin();
+  for (; it != lines.end(); it++) {
+    if (it->label==label) {
+      lines.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
 void ACode::scanLines() const {
   vector<ALine>::const_iterator it = lines.begin();
-  //chop off trailing blank spaces
   bool errorDetected = false;
   for (; it != lines.end(); it++) {
     if (!validateLine(*it)) {
@@ -574,7 +666,7 @@ const ALine & ACode::getLineOrAfter(const size_t label) const {
     }
   }
   cout << "LINE " << label << ": ";
-  cout << "No line after " << label << endl << endl;
+  cout << "No line at or after " << label << endl << endl;
   exit(2);
   return *it;
 }
@@ -623,6 +715,7 @@ void ACode::doAssignStatement(const ALine & line) {
 }
 
 void ACode::executeCode() {
+  scanLines();
   ALine line = firstLine();
   while (true) {
     line = getLineOrAfter(handleLine(line));

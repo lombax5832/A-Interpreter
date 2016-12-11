@@ -38,9 +38,11 @@ public:
 
   const ALine& firstLine() const;
 
-  void fromText(const string&);
+  void fromText(const string &lines);
 
-  void fromFile(const string &file);
+  bool fromFile(const string &file, bool strict);
+
+  void fromKeyboard();
 
   void printLines() const;  
 
@@ -113,4 +115,8 @@ private:
   string resolveIdensInExpression(const string &expr, size_t &start, const size_t &end, const size_t &label) const;
 
   int evalPostFix(const string &expr, const size_t label) const;
+
+  bool doesLineExist(const size_t label) const;
+
+  bool delLineAt(const size_t label);
 };
