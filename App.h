@@ -5,7 +5,6 @@ using namespace std;
 
 //Constant Statement types
 const enum STATEMENT {VAR, ASSIGNMENT, IF, PRINT, STOP, UNKNOWN};
-//const string STATEMENT[] = { "VAR" , "ASSIGNMENT", "IF", "PRINT", "STOP", "UNKNOWN" };
 const enum  SYNTAX_ERR {NONE, UNDEC_VAR};
 
 //Line of code, splits up line and label
