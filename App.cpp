@@ -20,7 +20,11 @@ const ALine& ACode::firstLine() const {
 
 //Adds a line to lines vector if label is greater than previous label
 void ACode::addline(const ALine line, bool strict) {
-  //Preserves order to use binary search later
+  if (line.label == 0) {
+    cout << "ERROR, label does not exist, or is 0." << endl;
+    exit(2);
+  }
+  //Preserves order for execution later
   if (lines.empty()) {
     lines.push_back(line);
     return;
@@ -38,13 +42,6 @@ void ACode::addline(const ALine line, bool strict) {
     }
   }
   lines.push_back(line);
-  //if (line.label > lines.back().label) {
-  //  lines.push_back(line);
-  //} else {
-  //  cout << "LINE " << line.label << ": ";
-  //  cout << "ERROR, added label must be larger than previous labels." << endl;
-  //  exit(2);
-  //}
 }
 
 void ACode::addVar(const AVar toAdd, const size_t label) {
@@ -90,9 +87,10 @@ bool ACode::fromFile(const string & file, bool strict) {
   size_t pos = 0;
 
   if (!strm) {
+    cout << "Error, file could not be found." << endl;
     if (!strict)
       return false;
-    cout << "Error, file could not be found." << endl;
+    
     exit(2);
   }
   
@@ -100,11 +98,16 @@ bool ACode::fromFile(const string & file, bool strict) {
     getline(strm, line);
     pos = line.find(';', 0);
     if (pos == string::npos) {
+      if (line != "") {
+        cout << "Error, lines must end in a \';\'" << endl;
+      } else {
+        return true;
+      }
       if (!strict) {
         strm.close();
         return false;
       }
-      cout << "Error, lines must end in a \';\'" << endl;
+      
       exit(2);
     }
     addline(textToLine(line, 0, pos), true);
@@ -291,7 +294,7 @@ int ACode::evalPostFix(const string &expr, const size_t label) const {
         stk.pop();
         firstInt = stk.top();
         stk.pop();
-        if (expr[i] == '/' && secondInt == 0) {
+        if (((expr[i] == '/') || (expr[i]=='%')) && secondInt == 0) {
           cout << "LINE " << label << ": ";
           cout << "Cannot divide by 0!" << endl;
           exit(2);
@@ -375,6 +378,9 @@ int ACode::doOp(const char op, const int first, const int second, const size_t l
     break;
   case '/':
     return first / second;
+    break;
+  case '%':
+    return first % second;
     break;
   default:
     cout << "LINE " << label << ": ";
@@ -494,10 +500,8 @@ bool ACode::doesVarExist(const string & var) const {
 int ACode::getOperatorPrecedance(const char input) const {
   if (input == '+' || input == '-')
     return 0;
-  if (input == '*' || input == '/')
+  if (input == '*' || input == '/' || input == '%')
     return 1;
-  if (input == '^')
-    return 2;
   return -1;
 }
 
